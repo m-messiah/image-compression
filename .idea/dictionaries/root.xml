@@ -2,6 +2,7 @@
   <dictionary name="root">
     <words>
       <w>argv</w>
+      <w>psnr</w>
     </words>
   </dictionary>
 </component>

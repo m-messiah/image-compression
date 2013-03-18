@@ -2,30 +2,31 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import math
+import operator
 import Tkinter as Tk
 from PIL import Image
-from ImageTk import PhotoImage
+from PIL import ImageTk
 
 
-class Images(Tk.Frame):
-    def __init__(self, master, image1):
-        Tk.Frame.__init__(self, master)
-        self.pack()
-        self.label1 = Tk.Label(self)
-        image1 = Image.open("../Test_Images/image_House256rgb.png")
-        self.label1["image"] = PhotoImage(image1)
-        self.label1.place(x=20, y=20, width=image1.size[0], height=image1.size[1])
-        self.label1.pack({'side': 'left'})
-        #self.CONVERT = Tk.Button(self)
-        #self.CONVERT["text"] = "Convert"
-        #self.CONVERT["command"] = self.Convert(image1)
-        #self.CONVERT.pack({"side": "bottom"})
+def pixels(image):
+    pixels = image.load()
+    width, height = image.size
+    all_pixels = []
+    for x in range(width):
+        for y in range(height):
+            cpixel = pixels[x, y]
+            all_pixels.append(cpixel)
+    return all_pixels
 
-    def Convert(self, image1):
-        image2 = image1.convert("L")
-        self.label2 = Tk.Label(self, image=PhotoImage(image2))
-        self.label2.place(x=image1.size[0] + 60, y=20, width=image2.size[0], height=image2.size[1])
-        self.label2.pack({"side": "right"})
+
+def psnr(image1, image2):
+    img1 = pixels(image1)
+    img2 = pixels(image2)
+    mse = math.sqrt(reduce(operator.add,
+                           map(lambda a, b: (a[1] - b) ** 2, img1, img2)) / len(img1))
+    log10 = math.log10
+    return 10.0 * log10(float(256 * 256) / float(mse))
 
 
 def main(imagePath):
@@ -38,8 +39,32 @@ def main(imagePath):
     root = Tk.Tk()
     root.title("Test")
     root.geometry("%dx%d+200+200" % (image1.size[0] * 2 + 100, image1.size[1] + 80))
-    images = Images(master=root, image1=image1)
-    images.mainloop()
+
+    photo1 = ImageTk.PhotoImage(image1)
+    label1 = Tk.Label(root, image=photo1)
+    label1.image = photo1
+    label1.place(x=20, y=20, width=image1.size[0], height=image1.size[1])
+
+    label2 = Tk.Label(root, image=photo1)
+    label2.image = photo1
+    label2.place(x=image1.size[0] + 60, y=20, width=image1.size[0], height=image1.size[1])
+
+    def Convert():
+        global photo2
+        image2 = image1.convert("L")
+        photo2 = ImageTk.PhotoImage(image2)
+        label2.configure(image=photo2)
+        label2.image = photo1
+        PSNR.configure(text="%.2f" % psnr(image1, image2))
+
+    PSNR = Tk.Label(root, text="00.0")
+    PSNR.place(x=300, y=image1.size[1] + 40)
+
+    CONVERT = Tk.Button(root, text="Convert")
+    CONVERT["command"] = Convert
+    CONVERT.place(x=100, y=image1.size[1] + 40)
+
+    root.mainloop()
 
 
 if __name__ == "__main__":
