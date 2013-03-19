@@ -61,7 +61,6 @@ def main(imagePath):
         global photo2
         colorSpace = "L"
         image2 = image1.convert(colorSpace)
-        colorSpace2 = len(colorSpace)
         photo2 = ImageTk.PhotoImage(image2)
         label2.configure(image=photo2)
         label2.image = photo1

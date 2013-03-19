@@ -7,7 +7,7 @@
     </list>
     <ignored path="image-compression.iws" />
     <ignored path=".idea/workspace.xml" />
-    <file path="/Dummy.txt" changelist="ab6cb5b9-f142-485a-aa94-afd1c86d40aa" time="1363590245830" ignored="false" />
+    <file path="/Dummy.txt" changelist="ab6cb5b9-f142-485a-aa94-afd1c86d40aa" time="1363671379744" ignored="false" />
     <file path="/task.py" changelist="ab6cb5b9-f142-485a-aa94-afd1c86d40aa" time="1363671298997" ignored="false" />
     <file path="/a.py" changelist="ab6cb5b9-f142-485a-aa94-afd1c86d40aa" time="1363362587214" ignored="false" />
     <file path="/start_script.py" changelist="ab6cb5b9-f142-485a-aa94-afd1c86d40aa" time="1363362591975" ignored="false" />
@@ -30,7 +30,7 @@
       <file leaf-file-name="task.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Task1/task.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="14" column="0" selection-start="213" selection-end="213" vertical-scroll-proportion="0.36206895">
+            <state line="63" column="8" selection-start="1711" selection-end="1711" vertical-scroll-proportion="0.62068963">
               <folding>
                 <element signature="e#43#53#0" expanded="true" />
               </folding>
@@ -272,7 +272,11 @@
       <created>1363590254836</created>
       <updated>1363590254836</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Some optimization fixes. PSNR for three channels">
+      <created>1363671385385</created>
+      <updated>1363671385386</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers>
       <GitHub shared="false">
         <commitMessageFormat>{id} {summary}</commitMessageFormat>
@@ -350,7 +354,7 @@
     <option name="MAXIMUM_HISTORY_ROWS" value="1000" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="It Works. Calculates PSNR for 1 channel to 1" />
+    <option name="LAST_COMMIT_MESSAGE" value="Some optimization fixes. PSNR for three channels" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="false" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -366,6 +370,7 @@
     <MESSAGE value="Test" />
     <MESSAGE value="Classes, but labels not work yet" />
     <MESSAGE value="It Works. Calculates PSNR for 1 channel to 1" />
+    <MESSAGE value="Some optimization fixes. PSNR for three channels" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -409,7 +414,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Task1/task.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="14" column="0" selection-start="213" selection-end="213" vertical-scroll-proportion="0.36206895">
+        <state line="63" column="8" selection-start="1711" selection-end="1711" vertical-scroll-proportion="0.62068963">
           <folding>
             <element signature="e#43#53#0" expanded="true" />
           </folding>
