@@ -9,24 +9,32 @@ from PIL import Image
 from PIL import ImageTk
 
 
+# DEFINE GLOBAL VARIABLES
+MAX_COLORS2 = float(256 * 256 * 3)
+
+
 def pixels(image):
+    colorSpace = len(image.getbands())
     pixels = image.load()
-    width, height = image.size
     all_pixels = []
-    for x in range(width):
-        for y in range(height):
-            cpixel = pixels[x, y]
-            all_pixels.append(cpixel)
+    for x in range(image.size[0]):
+        for y in range(image.size[1]):
+            coloredPixel = pixels[x, y]
+            if colorSpace < 2:
+                for i in range(3):
+                    all_pixels.append(coloredPixel)
+                continue
+            for i in range(colorSpace):
+                all_pixels.append(coloredPixel[i])
     return all_pixels
 
 
 def psnr(image1, image2):
     img1 = pixels(image1)
     img2 = pixels(image2)
-    mse = math.sqrt(reduce(operator.add,
-                           map(lambda a, b: (a[1] - b) ** 2, img1, img2)) / len(img1))
-    log10 = math.log10
-    return 10.0 * log10(float(256 * 256) / float(mse))
+    mse = float(math.sqrt(reduce(operator.add,
+                                 map(lambda a, b: (a - b) ** 2, img1, img2)) / len(img1)))
+    return 10.0 * math.log10(MAX_COLORS2 / mse)
 
 
 def main(imagePath):
@@ -37,7 +45,7 @@ def main(imagePath):
         sys.exit(1)
 
     root = Tk.Tk()
-    root.title("Test")
+    root.title("PSNR after B/W")
     root.geometry("%dx%d+200+200" % (image1.size[0] * 2 + 100, image1.size[1] + 80))
 
     photo1 = ImageTk.PhotoImage(image1)
@@ -51,7 +59,9 @@ def main(imagePath):
 
     def Convert():
         global photo2
-        image2 = image1.convert("L")
+        colorSpace = "L"
+        image2 = image1.convert(colorSpace)
+        colorSpace2 = len(colorSpace)
         photo2 = ImageTk.PhotoImage(image2)
         label2.configure(image=photo2)
         label2.image = photo1
