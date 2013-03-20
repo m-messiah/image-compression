@@ -7,10 +7,11 @@ import operator
 import Tkinter as Tk
 from PIL import Image
 from PIL import ImageTk
+from tkFileDialog import askopenfilename, asksaveasfilename
 
 
 # DEFINE GLOBAL VARIABLES
-MAX_COLORS2 = float(256 * 256 * 3)
+MAX_COLORS2 = float(255 * 255 * 3)
 
 
 def pixels(image):
@@ -29,57 +30,110 @@ def pixels(image):
     return all_pixels
 
 
-def psnr(image1, image2):
-    img1 = pixels(image1)
-    img2 = pixels(image2)
+def psnr():
+    global image
+    img1 = pixels(image[0])
+    img2 = pixels(image[1])
     mse = float(math.sqrt(reduce(operator.add,
                                  map(lambda a, b: (a - b) ** 2, img1, img2)) / len(img1)))
+    if mse == 0.0:
+        return None
     return 10.0 * math.log10(MAX_COLORS2 / mse)
 
 
 def main(imagePath):
-    try:
-        image1 = Image.open(imagePath)
-    except IOError:
-        sys.stderr.write("Image not found\n")
-        sys.exit(1)
-
     root = Tk.Tk()
-    root.title("PSNR after B/W")
-    root.geometry("%dx%d+200+200" % (image1.size[0] * 2 + 100, image1.size[1] + 80))
+    root.title("Comparator")
+    root.geometry("%dx%d+200+200" % (256 * 2 + 140, 256 + 80))
+    global image
+    global photo
+    global label
+    image, photo, label = [None, None], [None, None], [None, None]
 
-    photo1 = ImageTk.PhotoImage(image1)
-    label1 = Tk.Label(root, image=photo1)
-    label1.image = photo1
-    label1.place(x=20, y=20, width=image1.size[0], height=image1.size[1])
+    def openFile():
+        filename = askopenfilename(filetypes=[("PNG Images", "*.png")])
+        return filename
 
-    label2 = Tk.Label(root, image=photo1)
-    label2.image = photo1
-    label2.place(x=image1.size[0] + 60, y=20, width=image1.size[0], height=image1.size[1])
+    def openFileL():
+        openImage(openFile(), 0)
 
-    def Convert():
-        global photo2
-        colorSpace = "L"
-        image2 = image1.convert(colorSpace)
-        photo2 = ImageTk.PhotoImage(image2)
-        label2.configure(image=photo2)
-        label2.image = photo1
-        PSNR.configure(text="%.2f" % psnr(image1, image2))
+    def openFileR():
+        openImage(openFile(), 1)
+
+    def openImage(imagePath, i):
+        try:
+            global image
+            image[i] = Image.open(imagePath)
+        except IOError:
+            sys.stderr.write("Image not found\n")
+            sys.exit(1)
+        global photo
+        photo[i] = ImageTk.PhotoImage(image[i])
+        global label
+        label[i] = Tk.Label(root, image=photo[i])
+        label[i].image = photo[i]
+        label[i].place(x=20 + i * (image[i].size[0] + 40), y=20, width=image[i].size[0], height=image[i].size[1])
+
+    openImage(imagePath, 0)
+    openImage(imagePath, 1)
+
+    def recalcpsnr():
+        psnR = psnr()
+        if psnR:
+            PSNR.configure(text="%.2f" % psnR)
+        else:
+            PSNR.configure(text="Undef")
+
+    def Convert(colorSpace):
+        global photo
+        global image
+        image[1] = image[0].convert(colorSpace)
+        photo[1] = ImageTk.PhotoImage(image[1])
+        label[1].configure(image=photo[1])
+        label[1].image = photo[0]
+        recalcpsnr()
+
+    def convertBIN():
+        Convert("1")
+
+    def convertL():
+        Convert("L")
 
     PSNR = Tk.Label(root, text="00.0")
-    PSNR.place(x=300, y=image1.size[1] + 40)
+    PSNR.place(x=300, y=300)
 
-    CONVERT = Tk.Button(root, text="Convert")
-    CONVERT["command"] = Convert
-    CONVERT.place(x=100, y=image1.size[1] + 40)
+    CALCPSNR = Tk.Button(root, text="Recalculate PSNR", command=recalcpsnr)
+    CALCPSNR.place(x=150, y=290)
 
+    def saveImage(img):
+        filename = asksaveasfilename(filetypes=[("PNG Images", "*.png")])
+        img.save(filename)
+
+    def saveImageL():
+        saveImage(image[0])
+
+    def saveImageR():
+        saveImage(image[1])
+
+    # Create menu
+    menu = Tk.Menu(root)
+    fileMenuL = Tk.Menu(menu)
+    menu.add_cascade(label="Left panel", menu=fileMenuL)
+    fileMenuL.add_command(label="Open...", command=openFileL)
+    fileMenuL.add_command(label="Save...", command=saveImageL)
+    toolMenu = Tk.Menu(menu)
+    menu.add_cascade(label="Tools", menu=toolMenu)
+    toolMenu.add_command(label="Convert to BIN (B/W)", command=convertBIN)
+    toolMenu.add_command(label="Convert to Grayscale", command=convertL)
+    fileMenuR = Tk.Menu(menu)
+    menu.add_cascade(label="Right panel", menu=fileMenuR)
+    fileMenuR.add_command(label="Open...", command=openFileR)
+    fileMenuR.add_command(label="Save...", command=saveImageR)
+
+    root.config(menu=menu)
     root.mainloop()
 
 
 if __name__ == "__main__":
-    #if len(sys.argv) < 2:
-    #    print "Usage: %s /path/to/image.png" % sys.argv[0]
-    #    sys.exit(1)
-    #imagepath = sys.argv[1]
     imagePath = "../Test_Images/image_House256rgb.png"
     main(imagePath)

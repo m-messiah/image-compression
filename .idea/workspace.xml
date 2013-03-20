@@ -2,13 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ab6cb5b9-f142-485a-aa94-afd1c86d40aa" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/dictionaries/root.xml" afterPath="$PROJECT_DIR$/.idea/dictionaries/root.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Task1/task.py" afterPath="$PROJECT_DIR$/Task1/task.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="image-compression.iws" />
     <ignored path=".idea/workspace.xml" />
-    <file path="/Dummy.txt" changelist="ab6cb5b9-f142-485a-aa94-afd1c86d40aa" time="1363671379744" ignored="false" />
-    <file path="/task.py" changelist="ab6cb5b9-f142-485a-aa94-afd1c86d40aa" time="1363671298997" ignored="false" />
+    <file path="/Dummy.txt" changelist="ab6cb5b9-f142-485a-aa94-afd1c86d40aa" time="1363766710484" ignored="false" />
+    <file path="/task.py" changelist="ab6cb5b9-f142-485a-aa94-afd1c86d40aa" time="1363770402355" ignored="false" />
     <file path="/a.py" changelist="ab6cb5b9-f142-485a-aa94-afd1c86d40aa" time="1363362587214" ignored="false" />
     <file path="/start_script.py" changelist="ab6cb5b9-f142-485a-aa94-afd1c86d40aa" time="1363362591975" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -30,7 +31,7 @@
       <file leaf-file-name="task.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Task1/task.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="63" column="8" selection-start="1711" selection-end="1711" vertical-scroll-proportion="0.62068963">
+            <state line="130" column="61" selection-start="3723" selection-end="3723" vertical-scroll-proportion="0.7413793">
               <folding>
                 <element signature="e#43#53#0" expanded="true" />
               </folding>
@@ -158,10 +159,11 @@
   <component name="PropertiesComponent">
     <property name="options.splitter.main.proportions" value="0.3" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="recentsLimit" value="5" />
     <property name="options.lastSelected" value="com.jetbrains.python.configuration.PythonSdkConfigurable" />
-    <property name="options.searchVisible" value="true" />
+    <property name="recentsLimit" value="5" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../ROT/Mahout" />
     <property name="options.splitter.details.proportions" value="0.2" />
+    <property name="options.searchVisible" value="true" />
   </component>
   <component name="PyConsoleOptionsProvider">
     <option name="myPythonConsoleState">
@@ -276,7 +278,11 @@
       <created>1363671385385</created>
       <updated>1363671385386</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Some optimization fixes. PSNR for three channels">
+      <created>1363671422649</created>
+      <updated>1363671422649</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers>
       <GitHub shared="false">
         <commitMessageFormat>{id} {summary}</commitMessageFormat>
@@ -296,12 +302,12 @@
     <frame x="-1" y="27" width="1922" height="1055" extended-state="6" />
     <editor active="false" />
     <layout>
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32867134" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32867134" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3292683" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20117396" sideWeight="0.67184037" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20330843" sideWeight="0.67184037" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32867134" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -310,7 +316,7 @@
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32867134" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
@@ -378,6 +384,15 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/Task1/task.py">
       <provider selected="true" editor-type-id="text-editor">
+        <state line="37" column="19" selection-start="944" selection-end="944" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="e#43#53#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Task1/task.py">
+      <provider selected="true" editor-type-id="text-editor">
         <state line="19" column="41" selection-start="616" selection-end="616" vertical-scroll-proportion="0.0">
           <folding>
             <element signature="e#43#53#0" expanded="true" />
@@ -414,7 +429,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Task1/task.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="63" column="8" selection-start="1711" selection-end="1711" vertical-scroll-proportion="0.62068963">
+        <state line="130" column="61" selection-start="3723" selection-end="3723" vertical-scroll-proportion="0.7413793">
           <folding>
             <element signature="e#43#53#0" expanded="true" />
           </folding>

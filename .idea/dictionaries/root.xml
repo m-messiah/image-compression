@@ -2,6 +2,8 @@
   <dictionary name="root">
     <words>
       <w>argv</w>
+      <w>calcpsnr</w>
+      <w>grayscale</w>
       <w>psnr</w>
     </words>
   </dictionary>
