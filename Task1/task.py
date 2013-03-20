@@ -30,8 +30,7 @@ def pixels(image):
     return all_pixels
 
 
-def psnr():
-    global image
+def psnr(image):
     img1 = pixels(image[0])
     img2 = pixels(image[1])
     mse = float(math.sqrt(reduce(operator.add,
@@ -45,9 +44,6 @@ def main(imagePath):
     root = Tk.Tk()
     root.title("Comparator")
     root.geometry("%dx%d+200+200" % (256 * 2 + 140, 256 + 80))
-    global image
-    global photo
-    global label
     image, photo, label = [None, None], [None, None], [None, None]
 
     def openFile():
@@ -62,47 +58,45 @@ def main(imagePath):
 
     def openImage(imagePath, i):
         try:
-            global image
             image[i] = Image.open(imagePath)
         except IOError:
             sys.stderr.write("Image not found\n")
             sys.exit(1)
-        global photo
+        #global photo
         photo[i] = ImageTk.PhotoImage(image[i])
-        global label
+        #global label
         label[i] = Tk.Label(root, image=photo[i])
         label[i].image = photo[i]
-        label[i].place(x=20 + i * (image[i].size[0] + 40), y=20, width=image[i].size[0], height=image[i].size[1])
+        label[i].place(x=20 + i * (image[i].size[0] + 40), y=20,
+                       width=image[i].size[0], height=image[i].size[1])
 
     openImage(imagePath, 0)
     openImage(imagePath, 1)
 
-    def recalcpsnr():
-        psnR = psnr()
+    def recalculatePSNR():
+        psnR = psnr(image)
         if psnR:
             PSNR.configure(text="%.2f" % psnR)
         else:
             PSNR.configure(text="Undef")
 
-    def Convert(colorSpace):
-        global photo
-        global image
+    def ConvertTo(colorSpace):
         image[1] = image[0].convert(colorSpace)
         photo[1] = ImageTk.PhotoImage(image[1])
         label[1].configure(image=photo[1])
         label[1].image = photo[0]
-        recalcpsnr()
+        recalculatePSNR()
 
     def convertBIN():
-        Convert("1")
+        ConvertTo("1")
 
     def convertL():
-        Convert("L")
+        ConvertTo("L")
 
     PSNR = Tk.Label(root, text="00.0")
     PSNR.place(x=300, y=300)
 
-    CALCPSNR = Tk.Button(root, text="Recalculate PSNR", command=recalcpsnr)
+    CALCPSNR = Tk.Button(root, text="Recalculate PSNR", command=recalculatePSNR)
     CALCPSNR.place(x=150, y=290)
 
     def saveImage(img):
@@ -115,21 +109,24 @@ def main(imagePath):
     def saveImageR():
         saveImage(image[1])
 
-    # Create menu
-    menu = Tk.Menu(root)
-    fileMenuL = Tk.Menu(menu)
-    menu.add_cascade(label="Left panel", menu=fileMenuL)
-    fileMenuL.add_command(label="Open...", command=openFileL)
-    fileMenuL.add_command(label="Save...", command=saveImageL)
-    toolMenu = Tk.Menu(menu)
-    menu.add_cascade(label="Tools", menu=toolMenu)
-    toolMenu.add_command(label="Convert to BIN (B/W)", command=convertBIN)
-    toolMenu.add_command(label="Convert to Grayscale", command=convertL)
-    fileMenuR = Tk.Menu(menu)
-    menu.add_cascade(label="Right panel", menu=fileMenuR)
-    fileMenuR.add_command(label="Open...", command=openFileR)
-    fileMenuR.add_command(label="Save...", command=saveImageR)
+    def createMenu():
+        """Create menu"""
+        menu = Tk.Menu(root)
+        fileMenuL = Tk.Menu(menu)
+        menu.add_cascade(label="Left panel", menu=fileMenuL)
+        fileMenuL.add_command(label="Open...", command=openFileL)
+        fileMenuL.add_command(label="Save...", command=saveImageL)
+        toolMenu = Tk.Menu(menu)
+        menu.add_cascade(label="Tools", menu=toolMenu)
+        toolMenu.add_command(label="Convert to BIN (B/W)", command=convertBIN)
+        toolMenu.add_command(label="Convert to Grayscale", command=convertL)
+        fileMenuR = Tk.Menu(menu)
+        menu.add_cascade(label="Right panel", menu=fileMenuR)
+        fileMenuR.add_command(label="Open...", command=openFileR)
+        fileMenuR.add_command(label="Save...", command=saveImageR)
+        return menu
 
+    menu = createMenu()
     root.config(menu=menu)
     root.mainloop()
 
