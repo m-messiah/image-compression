@@ -15,6 +15,16 @@ MAX_COLORS2 = float(255 * 255 * 3)
 
 
 def pixels(image):
+    """
+    >>> len(pixels(Image.new("1", (10, 10))))
+    300
+
+    >>> len(pixels(Image.new("L", (20, 20))))
+    1200
+
+    >>> len(pixels(Image.new("RGB", (30, 30))))
+    2700
+    """
     colorSpace = len(image.getbands())
     pixels = image.load()
     all_pixels = []
@@ -31,6 +41,12 @@ def pixels(image):
 
 
 def psnr(image):
+    """
+    >>> psnr((Image.new("1", (10, 10)), Image.new("1", (10, 10))))
+
+    >>> round(psnr((Image.new("1", (10, 10)), Image.new("1", (10, 10)).point(lambda i: i + 100))), 2)
+    32.9
+    """
     img1 = pixels(image[0])
     img2 = pixels(image[1])
     mse = float(math.sqrt(reduce(operator.add,
@@ -57,14 +73,14 @@ def main(imagePath):
         openImage(openFile(), 1)
 
     def openImage(imagePath, i):
+        if not imagePath:
+            return
         try:
             image[i] = Image.open(imagePath)
         except IOError:
             sys.stderr.write("Image not found\n")
             sys.exit(1)
-        #global photo
         photo[i] = ImageTk.PhotoImage(image[i])
-        #global label
         label[i] = Tk.Label(root, image=photo[i])
         label[i].image = photo[i]
         label[i].place(x=20 + i * (image[i].size[0] + 40), y=20,
@@ -93,7 +109,7 @@ def main(imagePath):
     def convertL():
         ConvertTo("L")
 
-    PSNR = Tk.Label(root, text="00.0")
+    PSNR = Tk.Label(root, text="Undef")
     PSNR.place(x=300, y=300)
 
     CALCPSNR = Tk.Button(root, text="Recalculate PSNR", command=recalculatePSNR)
@@ -101,7 +117,8 @@ def main(imagePath):
 
     def saveImage(img):
         filename = asksaveasfilename(filetypes=[("PNG Images", "*.png")])
-        img.save(filename)
+        if filename:
+            img.save(filename)
 
     def saveImageL():
         saveImage(image[0])
@@ -132,5 +149,11 @@ def main(imagePath):
 
 
 if __name__ == "__main__":
-    imagePath = "../Test_Images/image_House256rgb.png"
-    main(imagePath)
+    if len(sys.argv) < 2:
+        imagePath = "../Test_Images/image_House256rgb.png"
+        main(imagePath)
+    else:
+        if sys.argv[1] == "test":
+            import doctest
+
+            doctest.testmod()
