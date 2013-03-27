@@ -8,6 +8,8 @@ import Tkinter as Tk
 from PIL import Image
 from PIL import ImageTk
 from tkFileDialog import askopenfilename, asksaveasfilename
+import tkSimpleDialog
+import tkMessageBox
 
 
 # DEFINE GLOBAL VARIABLES
@@ -96,8 +98,11 @@ def main(imagePath):
         else:
             PSNR.configure(text="Undef")
 
-    def ConvertTo(colorSpace):
-        image[1] = image[0].convert(colorSpace)
+    def ConvertTo(colorSpace, matrix=None):
+        if matrix:
+            image[1] = image[0].convert(colorSpace, matrix)
+        else:
+            image[1] = image[0].convert(colorSpace)
         photo[1] = ImageTk.PhotoImage(image[1])
         label[1].configure(image=photo[1])
         label[1].image = photo[0]
@@ -107,7 +112,84 @@ def main(imagePath):
         ConvertTo("1")
 
     def convertL():
-        ConvertTo("L")
+
+        def stdgrayscale():
+            ConvertTo("L")
+            choosY.destroy()
+
+        choosY = tkSimpleDialog.Tk()
+        choosY.title("B/W weights")
+        choosY.geometry("300x100+300+300")
+        R = Tk.Label(choosY, text="Red * ")
+        R.grid(row=1, column=1)
+        RED2Y = Tk.Entry(choosY, justify=Tk.CENTER, width=5)
+        RED2Y.grid(row=1, column=2)
+        G = Tk.Label(choosY, text="Green * ")
+        G.grid(row=1, column=3)
+        GREEN2Y = Tk.Entry(choosY, justify=Tk.CENTER, width=5)
+        GREEN2Y.grid(row=1, column=4)
+        B = Tk.Label(choosY, text="Blue * ")
+        B.grid(row=1, column=5)
+        BLUE2Y = Tk.Entry(choosY, justify=Tk.CENTER, width=5)
+        BLUE2Y.grid(row=1, column=6)
+
+        def grayscale():
+            try:
+                redC = float(RED2Y.get())
+                greenC = float(GREEN2Y.get())
+                blueC = float(BLUE2Y.get())
+            except ValueError:
+                tkMessageBox.showerror("Error", "Bad input", parent=choosY)
+            else:
+                if redC + greenC + blueC > 1:
+                    tkMessageBox.showinfo("Warning", "Coefficient sum is more than 1", parent=choosY)
+                matrix = (redC, greenC, blueC, 0,
+                          0, 0, 0, 0,
+                          0, 0, 0, 0)
+                ConvertTo("L", matrix)
+                choosY.destroy()
+
+        CONVERT = Tk.Button(choosY, text="Grayscale!", command=grayscale)
+        CONVERT.grid(row=3, column=1, columnspan=4)
+        blank = Tk.Label(choosY, text=" ")
+        blank.grid(row=2, column=1, columnspan=6)
+        STDCONVERT = Tk.Button(choosY, text="Std Grayscale", command=stdgrayscale)
+        STDCONVERT.grid(row=3, column=5, columnspan=4)
+        choosY.mainloop()
+
+    def convertYUV():
+        image[1] = image[0].copy()
+        pix = image[1].load()
+        width, height = image[1].size
+        for x in range(width):
+            for y in range(height):
+                R, G, B = pix[x, y]
+                Y = R * 0.299 + G * 0.587 + B * 0.114
+                U = R * -0.169 + G * -0.332 + B * 0.500
+                V = R * 0.500 + G * -0.419 + B * -0.0813
+                pix[x, y] = int(Y), int(U), int(V)
+
+        photo[1] = ImageTk.PhotoImage(image[1])
+        label[1].configure(image=photo[1])
+        label[1].image = photo[0]
+        recalculatePSNR()
+
+    def convertRGB():
+        image[1] = image[0].copy()
+        pix = image[1].load()
+        width, height = image[1].size
+        for x in range(width):
+            for y in range(height):
+                Y, U, V = pix[x, y]
+                R = Y + 1.140 * V
+                G = Y - 0.394 * U - 0.581 * V
+                B = Y + 2.032 * U
+                pix[x, y] = int(R), int(G), int(B)
+
+        photo[1] = ImageTk.PhotoImage(image[1])
+        label[1].configure(image=photo[1])
+        label[1].image = photo[0]
+        recalculatePSNR()
 
     PSNR = Tk.Label(root, text="Undef")
     PSNR.place(x=300, y=300)
@@ -135,8 +217,10 @@ def main(imagePath):
         fileMenuL.add_command(label="Save...", command=saveImageL)
         toolMenu = Tk.Menu(menu)
         menu.add_cascade(label="Tools", menu=toolMenu)
-        toolMenu.add_command(label="Convert to BIN (B/W)", command=convertBIN)
-        toolMenu.add_command(label="Convert to Grayscale", command=convertL)
+        toolMenu.add_command(label="Convert RGB to BIN (B/W)", command=convertBIN)
+        toolMenu.add_command(label="Convert RGB to Grayscale", command=convertL)
+        toolMenu.add_command(label="Convert RGB to YUV", command=convertYUV)
+        toolMenu.add_command(label="Convert YUV to RGB", command=convertRGB)
         fileMenuR = Tk.Menu(menu)
         menu.add_cascade(label="Right panel", menu=fileMenuR)
         fileMenuR.add_command(label="Open...", command=openFileR)
