@@ -46,13 +46,13 @@ def psnr(image):
     """
     >>> psnr((Image.new("1", (10, 10)), Image.new("1", (10, 10))))
 
-    >>> round(psnr((Image.new("1", (10, 10)), Image.new("1", (10, 10)).point(lambda i: i + 100))), 2)
-    32.9
+    >>> round(psnr((Image.new("1", (10, 10)), Image.new("1", (10, 10)).point(lambda i: 255))), 2)
+    0.00
     """
     img1 = pixels(image[0])
     img2 = pixels(image[1])
-    mse = float(math.sqrt(reduce(operator.add,
-                                 map(lambda a, b: (a - b) ** 2, img1, img2)) / len(img1)))
+    mse = float(reduce(operator.add,
+                       map(lambda a, b: (a - b) ** 2, img1, img2)) * 3.0 / len(img1))
     if mse == 0.0:
         return None
     return 10.0 * math.log10(MAX_COLORS2 / mse)
@@ -93,7 +93,7 @@ def main(imagePath):
 
     def recalculatePSNR():
         psnR = psnr(image)
-        if psnR:
+        if psnR or psnR == 0:
             PSNR.configure(text="%.2f" % psnR)
         else:
             PSNR.configure(text="Undef")
