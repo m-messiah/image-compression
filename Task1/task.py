@@ -191,6 +191,23 @@ def main(imagePath):
         label[1].image = photo[0]
         recalculatePSNR()
 
+    def DCT():
+        chooseSize = tkSimpleDialog.Tk()
+        chooseSize.title("DCT window size")
+        chooseSize.geometry("200x100+300+300")
+        N = Tk.Label(chooseSize, text="N = ")
+        N.grid(row=1, column=1)
+        NValue = Tk.Entry(chooseSize, justify=Tk.CENTER, width=4)
+        NValue.grid(row=1, column=3)
+
+        def dct():
+            print float(NValue.get())
+            chooseSize.destroy()
+
+        CONVERT = Tk.Button(chooseSize, text="DCT", command=dct)
+        CONVERT.grid(row=2, column=2)
+        chooseSize.mainloop()
+
     PSNR = Tk.Label(root, text="Undef")
     PSNR.place(x=300, y=300)
 
@@ -209,7 +226,23 @@ def main(imagePath):
         saveImage(image[1])
 
     def createMenu():
-        """Create menu"""
+        """Create menu
+
+        Left:
+            Open
+            Save
+        Tools:
+            Color Tools:
+                RGB2BIN
+                RGB2L
+                RGB2YUV
+                YUV2RGB
+            DCT
+        Right:
+            Open
+            Save
+
+        """
         menu = Tk.Menu(root)
         fileMenuL = Tk.Menu(menu)
         menu.add_cascade(label="Left panel", menu=fileMenuL)
@@ -217,10 +250,13 @@ def main(imagePath):
         fileMenuL.add_command(label="Save...", command=saveImageL)
         toolMenu = Tk.Menu(menu)
         menu.add_cascade(label="Tools", menu=toolMenu)
-        toolMenu.add_command(label="Convert RGB to BIN (B/W)", command=convertBIN)
-        toolMenu.add_command(label="Convert RGB to Grayscale", command=convertL)
-        toolMenu.add_command(label="Convert RGB to YUV", command=convertYUV)
-        toolMenu.add_command(label="Convert YUV to RGB", command=convertRGB)
+        colorTools = Tk.Menu(toolMenu)
+        toolMenu.add_cascade(label="Color Tools", menu=colorTools)
+        colorTools.add_command(label="Convert RGB to BIN (B/W)", command=convertBIN)
+        colorTools.add_command(label="Convert RGB to Grayscale", command=convertL)
+        colorTools.add_command(label="Convert RGB to YUV", command=convertYUV)
+        colorTools.add_command(label="Convert YUV to RGB", command=convertRGB)
+        toolMenu.add_command(label="DCT", command=DCT)
         fileMenuR = Tk.Menu(menu)
         menu.add_cascade(label="Right panel", menu=fileMenuR)
         fileMenuR.add_command(label="Open...", command=openFileR)
