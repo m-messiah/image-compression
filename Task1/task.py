@@ -72,6 +72,7 @@ class Window(Tk):
                                     command=self.convertRGB)
         self.toolMenu.add_command(label="DCT",
                                   command=self.DCT)
+        self.toolMenu.add_command(label="JPEG", command=self.JPEG)
         self.fileMenuR = Menu(self.menu)
         self.menu.add_cascade(label="Right panel", menu=self.fileMenuR)
         self.fileMenuR.add_command(label="Open...",
@@ -264,6 +265,56 @@ class Window(Tk):
         self.CONVERT = Button(self.chooseSize, text="DCT", command=dct)
         self.CONVERT.grid(row=2, column=2)
         self.chooseSize.mainloop()
+
+    def JPEG(self):
+        def convertJPG():
+            def colorConvert():
+                pass
+
+            def subsampling(type):
+                if type == 0:
+                    #All
+                    pass
+                elif type == 1:
+                    #Horiz
+                    pass
+                elif type == 2:
+                    #Vert
+                    pass
+
+            def quantise(coef):
+                pass
+
+            colorConvert()
+            subsampling(subsample.get())
+            quantise(coefQuant.get())
+            print "SubSample={} and Coef={}".format(subsample.get(),
+                                                    coefQuant.get())
+            #self.configJpeg.destroy()
+
+        self.configJpeg = tkSimpleDialog.Tk()
+        self.configJpeg.title("JPEG configure")
+        self.configJpeg.geometry("300x400+200+200")
+        self.SUBSAMPLING = Label(self.configJpeg, text="Subsampling Cb,Cr")
+        self.SUBSAMPLING.pack()
+        subsample = IntVar(self.configJpeg)
+        self.R1 = Radiobutton(self.configJpeg, text="ALL",
+                              variable=subsample, value=0)
+        self.R1.pack(anchor=W)
+        self.R2 = Radiobutton(self.configJpeg, text="Horizontal",
+                              variable=subsample, value=1)
+        self.R2.pack(anchor=W)
+        self.R3 = Radiobutton(self.configJpeg, text="Vertical",
+                              variable=subsample, value=2)
+        self.R3.pack(anchor=W)
+        coefQuant = DoubleVar(self.configJpeg)
+        self.CoQuant = Scale(self.configJpeg, label="Quantum coefficient",
+                             variable=coefQuant, orient=HORIZONTAL, length=150)
+        self.CoQuant.pack()
+        self.BuJPEG = Button(self.configJpeg, text="Convert!",
+                             command=convertJPG)
+        self.BuJPEG.pack()
+        self.configJpeg.mainloop()
 
 
 def main():
