@@ -318,7 +318,7 @@ class Window(Tk):
 
 
 def main():
-    imagePath = "../images/House_rgb.png"
+    imagePath = "images/House_rgb.png"
     converter = Window(title="Converter", imagePath=imagePath)
     converter.mainloop()
 
