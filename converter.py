@@ -22,6 +22,7 @@ class Window(Tk):
         self.title(title)
         self.geometry("%dx%d+200+200" % (256 * 2 + 140, 256 + 80))
         self.image = [None, None]
+        self.tempImage = None
         self.label = [None, None]
         self.photo = [None, None]
         self.createMenu()
@@ -140,7 +141,7 @@ class Window(Tk):
                 for i in range(colorSpace):
                     all_pixels.append(coloredPixel[i])
         return all_pixels
-    
+
     def psnr(self):
         img1 = self.pixels(0)
         img2 = self.pixels(1)
@@ -166,7 +167,7 @@ class Window(Tk):
 
     def convertL(self):
         self.choosY = tkSimpleDialog.Tk()
-        
+
         def stdgrayscale():
             self.ConvertTo("L")
             self.choosY.destroy()
@@ -205,8 +206,8 @@ class Window(Tk):
                 self.ConvertTo("L", matrix)
                 self.choosY.destroy()
 
-        self.CONVERT = Tk.Button(self.choosY, text="Grayscale!",
-                                 command=grayscale)
+        self.CONVERT = Button(self.choosY, text="Grayscale!",
+                              command=grayscale)
         self.CONVERT.grid(row=3, column=1, columnspan=4)
         self.blank = Label(self.choosY, text=" ")
         self.blank.grid(row=2, column=1, columnspan=6)
@@ -223,8 +224,8 @@ class Window(Tk):
             for y in range(height):
                 R, G, B = pix[x, y]
                 Y = R * 0.299 + G * 0.587 + B * 0.114
-                U = R * -0.169 + G * -0.332 + B * 0.500
-                V = R * 0.500 + G * -0.419 + B * -0.0813
+                U = R * -0.169 + G * -0.332 + B * 0.500 + 128
+                V = R * 0.500 + G * -0.419 + B * -0.0813 + 128
                 pix[x, y] = int(Y), int(U), int(V)
 
         self.photo[1] = ImageTk.PhotoImage(self.image[1])
@@ -239,9 +240,9 @@ class Window(Tk):
         for x in range(width):
             for y in range(height):
                 Y, U, V = pix[x, y]
-                R = Y + 1.140 * V
-                G = Y - 0.394 * U - 0.581 * V
-                B = Y + 2.032 * U
+                R = Y + 1.140 * (V - 128)
+                G = Y - 0.394 * (U - 128) - 0.581 * (V - 128)
+                B = Y + 2.032 * (U - 128)
                 pix[x, y] = int(R), int(G), int(B)
 
         self.photo[1] = ImageTk.PhotoImage(self.image[1])
@@ -269,18 +270,81 @@ class Window(Tk):
     def JPEG(self):
         def convertJPG():
             def colorConvert():
-                pass
+                self.tempImage = self.image[0].copy()
+                pix = self.tempImage.load()
+                width, height = self.tempImage.size
+                for x in range(width):
+                    for y in range(height):
+                        R, G, B = pix[x, y]
+                        Y = 16 + (65.738 * R + 129.057 * G + 25.064 * B) / 256
+                        Cb = -37.945 * R - 74.494 * G + 112.439 * B
+                        Cb = Cb / 256 + 128
+                        Cr = 112.439 * R - 94.154 * G - 18.285 * B
+                        Cr = Cr / 256 + 128
+                        pix[x, y] = int(Y), int(Cb), int(Cr)
 
             def subsampling(type):
+                sampledImage = self.tempImage.copy()
                 if type == 0:
-                    #All
+                    #None
                     pass
                 elif type == 1:
-                    #Horiz
-                    pass
+                    #All
+                    pix = sampledImage.load()
+                    width, height = sampledImage.size
+                    for x in range(0, width, 2):
+                        for y in range(0, height, 2):
+                            Cb, Cr = 0, 0
+                            for i in range(2):
+                                for j in range(2):
+                                    Y, cb, cr = pix[x+i, y+j]
+                                    Cb += cb
+                                    Cr += cr
+                            Cb /= 4
+                            Cr /= 4
+                            for i in range(2):
+                                for j in range(2):
+                                    Y, cb, cr = pix[x+i, y+j]
+                                    pix[x+i, y+j] = int(Y), int(Cb), int(Cr)
+
                 elif type == 2:
+                    #Horiz
+                    pix = sampledImage.load()
+                    width, height = sampledImage.size
+                    for x in range(0, width, 2):
+                        for y in range(0, height):
+                            Cb, Cr = 0, 0
+                            for i in range(2):
+                                Y, cb, cr = pix[x+i, y]
+                                Cb += cb
+                                Cr += cr
+                            Cb /= 4
+                            Cr /= 4
+                            for i in range(2):
+                                Y, cb, cr = pix[x+i, y]
+                                pix[x+i, y] = int(Y), int(Cb), int(Cr)
+
+                elif type == 3:
                     #Vert
-                    pass
+                    pix = sampledImage.load()
+                    width, height = sampledImage.size
+                    for x in range(width):
+                        for y in range(0, height, 2):
+                            Cb, Cr = 0, 0
+                            for j in range(2):
+                                Y, cb, cr = pix[x, y+j]
+                                Cb += cb
+                                Cr += cr
+                            Cb /= 4
+                            Cr /= 4
+                            for j in range(2):
+                                Y, cb, cr = pix[x, y+j]
+                                pix[x, y+j] = int(Y), int(Cb), int(Cr)
+
+                self.tempImage = sampledImage
+
+            def dct():
+                pass
 
             def quantise(coef):
                 pass
@@ -288,8 +352,14 @@ class Window(Tk):
             colorConvert()
             subsampling(subsample.get())
             quantise(coefQuant.get())
+            self.image[1] = self.tempImage.copy()
             print "SubSample={} and Coef={}".format(subsample.get(),
                                                     coefQuant.get())
+
+            self.photo[1] = ImageTk.PhotoImage(self.image[1])
+            self.label[1].configure(image=self.photo[1])
+            self.label[1].image = self.photo[0]
+            self.recalculatePSNR()
             #self.configJpeg.destroy()
 
         self.configJpeg = tkSimpleDialog.Tk()
@@ -298,22 +368,26 @@ class Window(Tk):
         self.SUBSAMPLING = Label(self.configJpeg, text="Subsampling Cb,Cr")
         self.SUBSAMPLING.pack()
         subsample = IntVar(self.configJpeg)
-        self.R1 = Radiobutton(self.configJpeg, text="ALL",
+        self.R0 = Radiobutton(self.configJpeg, text="None",
                               variable=subsample, value=0)
+        self.R0.pack(anchor=W)
+        self.R1 = Radiobutton(self.configJpeg, text="ALL",
+                              variable=subsample, value=1)
         self.R1.pack(anchor=W)
         self.R2 = Radiobutton(self.configJpeg, text="Horizontal",
-                              variable=subsample, value=1)
+                              variable=subsample, value=2)
         self.R2.pack(anchor=W)
         self.R3 = Radiobutton(self.configJpeg, text="Vertical",
-                              variable=subsample, value=2)
+                              variable=subsample, value=3)
         self.R3.pack(anchor=W)
         coefQuant = DoubleVar(self.configJpeg)
         self.CoQuant = Scale(self.configJpeg, label="Quantum coefficient",
-                             variable=coefQuant, orient=HORIZONTAL, length=150)
+                             variable=coefQuant, orient=HORIZONTAL, length=150,
+                             from_=1, to=255)
         self.CoQuant.pack()
-        self.BuJPEG = Button(self.configJpeg, text="Convert!",
-                             command=convertJPG)
-        self.BuJPEG.pack()
+        self.ButtonJPEG = Button(self.configJpeg, text="Convert!",
+                                 command=convertJPG)
+        self.ButtonJPEG.pack()
         self.configJpeg.mainloop()
 
 
