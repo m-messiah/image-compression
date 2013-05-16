@@ -28,6 +28,8 @@ class Window(Tk):
         self.createMenu()
         self.openImage(imagePath, 0)
         self.openImage(imagePath, 1)
+        self.quantMatrixY = None
+        self.quantMatrixC = None
         self.PSNR = Label(self, text="Undef")
         self.PSNR.place(x=300, y=300)
         self.CALCPSNR = Button(self, text="Recalculate PSNR",
@@ -272,7 +274,7 @@ class Window(Tk):
                 return [[0 for i in range(N)] for j in range(N)]
 
         def NormColor(C):
-            return 0 if C < 0 else 255 if C > 255 else C
+            return int(0 if C < 0 else 255 if C > 255 else C)
 
         def convertJPG():
             def colorConvert():
@@ -288,7 +290,7 @@ class Window(Tk):
                             G = B = R
                         Y = R * 0.299 + G * 0.587 + B * 0.114
                         Cb = - R * 0.169 - G * 0.332 + B * 0.500 + 128
-                        Cr = R * 0.500 + - G * 0.419 + - B * 0.0813 + 128
+                        Cr = R * 0.500 - G * 0.419 - B * 0.0813 + 128
                         pix[x, y] = int(Y), int(Cb), int(Cr)
 
             def colorDeConvert():
@@ -379,17 +381,20 @@ class Window(Tk):
             def dct(N=8, direction=0):
                 DCTMatrix = Matrix(N)
                 for j in range(N):
-                    DCTMatrix[0][j] = 1.0 / math.sqrt(N)
+                    DCTMatrix[0][j] = 1.0
                 for i in range(1, N):
                     for j in range(N):
-                        DCTMatrix[i][j] = math.sqrt(2.0 / N) * math.cos(
-                            (2 * j + 1) * i * math.pi / 2 / N)
+                        DCTMatrix[i][j] = (math.sqrt(2.0)
+                                           * math.cos((2 * j + 1) * i * math.pi
+                                                      / 2.0 / N))
+
                 DCTMatrixT = Matrix(N)
                 for i in range(N):
                     for j in range(N):
                         DCTMatrixT[i][j] = DCTMatrix[j][i]
                 if direction > 0:
                     DCTMatrix, DCTMatrixT = DCTMatrixT, DCTMatrix
+
                 pix = self.tempImage.load()
                 width, height = self.tempImage.size
                 for x in range(0, width, N):
@@ -408,14 +413,31 @@ class Window(Tk):
                                      Cr[i][j]) = (Y[i - 1][j - 1],
                                                   Cb[i - 1][j - 1],
                                                   Cr[i - 1][j - 1])
+
                         tempMatrix = matrixMult(Y, DCTMatrixT, N)
                         Y = matrixMult(DCTMatrix, tempMatrix, N)
                         for i in range(N):
                             for j in range(N):
+                                Y[i][j] = int(Y[i][j] / math.sqrt(N))
+
+                        #tempMatrix = matrixMult(Cb, DCTMatrixT, N)
+                        #Cb = matrixMult(DCTMatrix, tempMatrix, N)
+                        #for i in range(N):
+                        #    for j in range(N):
+                        #        Cb[i][j] = int(Cb[i][j] / math.sqrt(N))
+
+                        #tempMatrix = matrixMult(Cr, DCTMatrixT, N)
+                        #Cr = matrixMult(DCTMatrix, tempMatrix, N)
+                        #for i in range(N):
+                        #    for j in range(N):
+                        #        Cr[i][j] = int(Cr[i][j] / math.sqrt(N))
+
+                        for i in range(N):
+                            for j in range(N):
                                 try:
-                                    pix[x + i, y + j] = (int(Y[i][j]),
-                                                         int(Cb[i][j]),
-                                                         int(Cr[i][j]))
+                                    pix[x + i, y + j] = (NormColor(Y[i][j]),
+                                                         NormColor(Cb[i][j]),
+                                                         NormColor(Cr[i][j]))
                                 except IndexError:
                                     pass
 
@@ -425,6 +447,7 @@ class Window(Tk):
                     for j in range(N):
                         Q[i][j] = int(1 + ((1 + i + j) * coef))
 
+                self.quantMatrix = Q
                 pix = self.tempImage.load()
                 width, height = self.tempImage.size
                 for x in range(0, width, N):
@@ -433,36 +456,53 @@ class Window(Tk):
                             for j in range(N):
                                 try:
                                     pix[x + i,
-                                        y + j] = (pix[x + i,
-                                                      y + j][0] / Q[i][j],
-                                                  pix[x + i, y + j][1],
-                                                  pix[x + i, y + j][2])
+                                        y + j] = (int(pix[x + i, y + j][0])
+                                                  / Q[i][j],
+                                                  pix[x + i, y + j][1]
+                                                  / 1,  # Q[i][j],
+                                                  pix[x + i, y + j][2]
+                                                  / 1,  # Q[i][j]
+                                                  )
                                 except IndexError:
                                     pass
 
-            def normalize():
+            def deQuantise(N=8):
+                Q = self.quantMatrix
                 pix = self.tempImage.load()
                 width, height = self.tempImage.size
-                YMax = 0
-                for x in range(width):
-                    for y in range(height):
-                        if pix[x, y][0] > YMax:
-                            YMax = pix[x, y][0]
-                coef = 255.0 / YMax
-                for x in range(width):
-                    for y in range(height):
-                        pix[x, y] = (int(pix[x, y][0] * coef),
-                                     pix[x, y][1],
-                                     pix[x, y][2])
+                for x in range(0, width, N):
+                    for y in range(0, height, N):
+                        for i in range(N):
+                            for j in range(N):
+                                try:
+                                    pix[x + i,
+                                        y + j] = (int(pix[x + i, y + j][0]
+                                                  * Q[i][j]),
+                                                  pix[x + i, y + j][1]
+                                                  * 1,  # Q[i][j],
+                                                  pix[x + i, y + j][2]
+                                                  * 1,  # Q[i][j]
+                                                  )
+                                except IndexError:
+                                    pass
 
             colorConvert()
             subsampling(subsample.get())
             N = renderWindow.get()
             dct(N, direction=0)
             quantise(coefQuant.get(), N)
+
+            # Zigzag table
+            # Compressing is here
+            # Writing to a file
+
+            # Reading a file
+            # Decompressing the DCT data.
+
+            deQuantise(N)
             dct(N, direction=1)
-            normalize()
             colorDeConvert()
+
             self.image[1] = self.tempImage.copy()
             self.photo[1] = ImageTk.PhotoImage(self.image[1])
             self.label[1].configure(image=self.photo[1])
@@ -489,14 +529,14 @@ class Window(Tk):
                               variable=subsample, value=3)
         self.R3.pack(anchor=W)
         coefQuant = DoubleVar(self.configJpeg)
-        self.CoQuant = Scale(self.configJpeg, label="Quantum coefficient",
+        self.CoQuant = Scale(self.configJpeg, label="Gamma",
                              variable=coefQuant, orient=HORIZONTAL, length=150,
-                             from_=0, to=25)
+                             from_=0, to=15, resolution=0.1)
         self.CoQuant.pack()
         renderWindow = IntVar(self.configJpeg)
         self.rWSize = Scale(self.configJpeg, label="Render window size",
                             variable=renderWindow, orient=HORIZONTAL,
-                            length=150, from_=1, to=15)
+                            length=150, from_=1, to=16)
         self.rWSize.pack()
         self.ButtonJPEG = Button(self.configJpeg, text="Convert!",
                                  command=convertJPG)
