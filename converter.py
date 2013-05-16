@@ -48,7 +48,7 @@ class Window(Tk):
                 RGB2L
                 RGB2YUV
                 YUV2RGB
-            DCT
+            JPEG
         Right:
             Open
             Save
@@ -73,8 +73,6 @@ class Window(Tk):
                                     command=self.convertYUV)
         self.colorTools.add_command(label="Convert YUV to RGB",
                                     command=self.convertRGB)
-        self.toolMenu.add_command(label="DCT",
-                                  command=self.DCT)
         self.toolMenu.add_command(label="JPEG", command=self.JPEG)
         self.fileMenuR = Menu(self.menu)
         self.menu.add_cascade(label="Right panel", menu=self.fileMenuR)
@@ -251,23 +249,6 @@ class Window(Tk):
         self.label[1].configure(image=self.photo[1])
         self.label[1].image = self.photo[0]
         self.recalculatePSNR()
-
-    def DCT(self):
-        self.chooseSize = tkSimpleDialog.Tk()
-        self.chooseSize.title("DCT window size")
-        self.chooseSize.geometry("200x100+300+300")
-        self.N = Label(self.chooseSize, text="N = ")
-        self.N.grid(row=1, column=1)
-        self.NValue = Entry(self.chooseSize, justify=CENTER, width=4)
-        self.NValue.grid(row=1, column=3)
-
-        def dct():
-            print float(self.NValue.get())
-            self.chooseSize.destroy()
-
-        self.CONVERT = Button(self.chooseSize, text="DCT", command=dct)
-        self.CONVERT.grid(row=2, column=2)
-        self.chooseSize.mainloop()
 
     def JPEG(self):
         def Matrix(N):
