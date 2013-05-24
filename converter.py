@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import math
-import operator
+from math import sqrt, cos, pi, log10
+from operator import add
 from Tkinter import *
 from PIL import Image
 from PIL import ImageTk
@@ -145,12 +145,12 @@ class Window(Tk):
     def psnr(self):
         img1 = self.pixels(0)
         img2 = self.pixels(1)
-        mse = float(reduce(operator.add,
+        mse = float(reduce(add,
                            map(lambda a, b: (a - b) ** 2,
                                img1, img2)) * 3.0 / len(img1))
         if mse == 0.0:
             return None
-        return 10.0 * math.log10(MAX_COLORS2 / mse)
+        return 10.0 * log10(MAX_COLORS2 / mse)
 
     def ConvertTo(self, colorSpace, matrix=None):
         if matrix:
@@ -252,7 +252,7 @@ class Window(Tk):
 
     def JPEG(self):
         def Matrix(N):
-                return [[0 for i in range(N)] for j in range(N)]
+            return map(lambda _: [0] * N, range(N))
 
         def NormColor(C):
             return int(0 if C < 0 else 255 if C > 255 else C)
@@ -272,7 +272,7 @@ class Window(Tk):
                         Y = R * 0.299 + G * 0.587 + B * 0.114
                         Cb = - R * 0.169 - G * 0.332 + B * 0.500 + 128
                         Cr = R * 0.500 - G * 0.419 - B * 0.0813 + 128
-                        pix[x, y] = int(Y), int(Cb), int(Cr)
+                        pix[x, y] = tuple(map(int, (Y, Cb, Cr)))
 
             def colorDeConvert():
                 pix = self.tempImage.load()
@@ -283,17 +283,14 @@ class Window(Tk):
                         R = Y + 1.402 * (Cr - 128)
                         G = Y - 0.34414 * (Cb - 128) - 0.71414 * (Cr - 128)
                         B = Y + 1.772 * (Cb - 128)
-                        R = NormColor(R)
-                        G = NormColor(G)
-                        B = NormColor(B)
-                        pix[x, y] = int(R), int(G), int(B)
+                        pix[x, y] = tuple(map(NormColor, (R, G, B)))
 
-            def subsampling(type):
+            def subsampling(sampleType):
                 sampledImage = self.tempImage.copy()
-                if type == 0:
+                if sampleType == 0:
                     #None
                     pass
-                elif type == 1:
+                elif sampleType == 1:
                     #All
                     pix = sampledImage.load()
                     width, height = sampledImage.size
@@ -310,11 +307,12 @@ class Window(Tk):
                             for i in range(2):
                                 for j in range(2):
                                     pix[x + i,
-                                        y + j] = (int(pix[x + i, y + j][0]),
-                                                  int(Cb),
-                                                  int(Cr))
+                                        y + j] = tuple(map(int,
+                                                           (pix[x + i,
+                                                                y + j][0],
+                                                           Cb, Cr)))
 
-                elif type == 2:
+                elif sampleType == 2:
                     #Horiz
                     pix = sampledImage.load()
                     width, height = sampledImage.size
@@ -328,11 +326,11 @@ class Window(Tk):
                             Cb /= 2
                             Cr /= 2
                             for i in range(2):
-                                pix[x + i, y] = (int(pix[x + i, y][0]),
-                                                 int(Cb),
-                                                 int(Cr))
+                                pix[x + i, y] = tuple(map(int,
+                                                          (pix[x + i, y][0],
+                                                          Cb, Cr)))
 
-                elif type == 3:
+                elif sampleType == 3:
                     #Vert
                     pix = sampledImage.load()
                     width, height = sampledImage.size
@@ -346,28 +344,28 @@ class Window(Tk):
                             Cb /= 2
                             Cr /= 2
                             for j in range(2):
-                                pix[x, y + j] = (int(pix[x, y + j][0]),
-                                                 int(Cb),
-                                                 int(Cr))
-
+                                pix[x, y + j] = tuple(map(int,
+                                                          (pix[x, y + j][0],
+                                                          Cb, Cr)))
                 self.tempImage = sampledImage
 
             def matrixMult(A, B, N):
                 C = Matrix(N)
                 for i in range(N):
                     for j in range(N):
-                        C[i][j] = sum([A[i][x] * B[x][j] for x in range(N)])
+                        C[i][j] = reduce(add,
+                                         map(lambda x: A[i][x] * B[x][j],
+                                             range(N)))
                 return C
 
             def dct(N=8, direction=0):
                 DCTMatrix = Matrix(N)
-                for j in range(N):
-                    DCTMatrix[0][j] = 1.0
+                DCTMatrix[0] = [1.0] * N
                 for i in range(1, N):
                     for j in range(N):
-                        DCTMatrix[i][j] = (math.sqrt(2.0)
-                                           * math.cos((2 * j + 1) * i * math.pi
-                                                      / 2.0 / N))
+                        DCTMatrix[i][j] = (sqrt(2.0)
+                                           * cos((2 * j + 1) * i * pi
+                                                 / 2.0 / N))
 
                 DCTMatrixT = Matrix(N)
                 for i in range(N):
@@ -396,29 +394,34 @@ class Window(Tk):
                                                   Cr[i - 1][j - 1])
 
                         tempMatrix = matrixMult(Y, DCTMatrixT, N)
-                        Y = matrixMult(DCTMatrix, tempMatrix, N)
-                        for i in range(N):
-                            for j in range(N):
-                                Y[i][j] = int(Y[i][j] / math.sqrt(N))
+                        # Here is: Y = DCT * Temp / sqrt(N)
+                        Y = map(lambda line:
+                                map(lambda el:
+                                    int(el / sqrt(N)),
+                                    line),
+                                matrixMult(DCTMatrix, tempMatrix, N))
 
                         #tempMatrix = matrixMult(Cb, DCTMatrixT, N)
-                        #Cb = matrixMult(DCTMatrix, tempMatrix, N)
-                        #for i in range(N):
-                        #    for j in range(N):
-                        #        Cb[i][j] = int(Cb[i][j] / math.sqrt(N))
+                        #Cb = map(lambda line:
+                        #         map(lambda el:
+                        #             int(el / sqrt(N)),
+                        #             line),
+                        #         matrixMult(DCTMatrix, tempMatrix, N))
 
                         #tempMatrix = matrixMult(Cr, DCTMatrixT, N)
-                        #Cr = matrixMult(DCTMatrix, tempMatrix, N)
-                        #for i in range(N):
-                        #    for j in range(N):
-                        #        Cr[i][j] = int(Cr[i][j] / math.sqrt(N))
+                        #Cr = map(lambda line:
+                        #         map(lambda el:
+                        #             int(el / sqrt(N)),
+                        #             line),
+                        #         matrixMult(DCTMatrix, tempMatrix, N))
 
                         for i in range(N):
                             for j in range(N):
                                 try:
-                                    pix[x + i, y + j] = (NormColor(Y[i][j]),
-                                                         NormColor(Cb[i][j]),
-                                                         NormColor(Cr[i][j]))
+                                    pix[x + i, y + j] = tuple(map(int,
+                                                                  (Y[i][j],
+                                                                  Cb[i][j],
+                                                                  Cr[i][j])))
                                 except IndexError:
                                     pass
 
@@ -458,7 +461,7 @@ class Window(Tk):
                                 try:
                                     pix[x + i,
                                         y + j] = (int(pix[x + i, y + j][0]
-                                                  * Q[i][j]),
+                                                      * Q[i][j]),
                                                   pix[x + i, y + j][1]
                                                   * 1,  # Q[i][j],
                                                   pix[x + i, y + j][2]
