@@ -259,9 +259,9 @@ class Window(Tk):
 
         def convertJPG():
             def colorConvert():
-                self.tempImage = self.image[0].copy().convert("RGB")
-                pix = self.tempImage.load()
-                width, height = self.tempImage.size
+                pix = self.image[0].copy().convert("RGB").load()
+                self.tempImage = Matrix(256)
+                width, height = 256, 256
                 for x in range(width):
                     for y in range(height):
                         try:
@@ -272,82 +272,75 @@ class Window(Tk):
                         Y = R * 0.299 + G * 0.587 + B * 0.114
                         Cb = - R * 0.169 - G * 0.332 + B * 0.500 + 128
                         Cr = R * 0.500 - G * 0.419 - B * 0.0813 + 128
-                        pix[x, y] = tuple(map(int, (Y, Cb, Cr)))
+                        self.tempImage[x][y] = tuple(map(int, (Y, Cb, Cr)))
 
             def colorDeConvert():
-                pix = self.tempImage.load()
-                width, height = self.tempImage.size
+                width, height = 256, 256
                 for x in range(width):
                     for y in range(height):
-                        Y, Cb, Cr = pix[x, y]
+                        Y, Cb, Cr = self.tempImage[x][y]
                         R = Y + 1.402 * (Cr - 128)
                         G = Y - 0.34414 * (Cb - 128) - 0.71414 * (Cr - 128)
                         B = Y + 1.772 * (Cb - 128)
-                        pix[x, y] = tuple(map(NormColor, (R, G, B)))
+                        self.tempImage[x][y] = tuple(map(NormColor, (R, G, B)))
 
             def subsampling(sampleType):
-                sampledImage = self.tempImage.copy()
                 if sampleType == 0:
                     #None
                     pass
                 elif sampleType == 1:
                     #All
-                    pix = sampledImage.load()
-                    width, height = sampledImage.size
+                    width, height = 256, 256
                     for x in range(0, width, 2):
                         for y in range(0, height, 2):
                             Cb, Cr = 0, 0
                             for i in range(2):
                                 for j in range(2):
-                                    Y, cb, cr = pix[x + i, y + j]
+                                    Y, cb, cr = self.tempImage[x + i][y + j]
                                     Cb += cb
                                     Cr += cr
                             Cb /= 4
                             Cr /= 4
                             for i in range(2):
                                 for j in range(2):
-                                    pix[x + i,
-                                        y + j] = tuple(map(int,
-                                                           (pix[x + i,
-                                                                y + j][0],
-                                                           Cb, Cr)))
+                                    self.tempImage[x + i][y + j] = tuple(
+                                        map(int,
+                                            (self.tempImage[x + i][y + j][0],
+                                             Cb, Cr)))
 
                 elif sampleType == 2:
                     #Horiz
-                    pix = sampledImage.load()
-                    width, height = sampledImage.size
+                    width, height = 256, 256
                     for x in range(0, width, 2):
                         for y in range(0, height):
                             Cb, Cr = 0, 0
                             for i in range(2):
-                                Y, cb, cr = pix[x + i, y]
+                                Y, cb, cr = self.tempImage[x + i][y]
                                 Cb += cb
                                 Cr += cr
                             Cb /= 2
                             Cr /= 2
                             for i in range(2):
-                                pix[x + i, y] = tuple(map(int,
-                                                          (pix[x + i, y][0],
-                                                          Cb, Cr)))
+                                self.tempImage[x + i][y] = tuple(
+                                    map(int, (self.tempImage[x + i][y][0],
+                                              Cb, Cr)))
 
                 elif sampleType == 3:
                     #Vert
-                    pix = sampledImage.load()
-                    width, height = sampledImage.size
+                    width, height = 256, 256
                     for x in range(width):
                         for y in range(0, height, 2):
                             Cb, Cr = 0, 0
                             for j in range(2):
-                                Y, cb, cr = pix[x, y + j]
+                                Y, cb, cr = self.tempImage[x][y + j]
                                 Cb += cb
                                 Cr += cr
                             Cb /= 2
                             Cr /= 2
                             for j in range(2):
-                                pix[x, y + j] = tuple(map(int,
-                                                          (pix[x, y + j][0],
-                                                          Cb, Cr)))
-                self.tempImage = sampledImage
+                                self.tempImage[x][y + j] = tuple(
+                                    map(int, (self.tempImage[x][y + j][0],
+                                              Cb, Cr)))
 
             def matrixMult(A, B, N):
                 C = Matrix(N)
@@ -359,33 +352,25 @@ class Window(Tk):
                 return C
 
             def dct(N=8, direction=0):
-                DCTMatrix = Matrix(N)
-                DCTMatrix[0] = [1.0] * N
-                for i in range(1, N):
-                    for j in range(N):
-                        DCTMatrix[i][j] = (sqrt(2.0)
-                                           * cos((2 * j + 1) * i * pi
-                                                 / 2.0 / N))
-
-                DCTMatrixT = Matrix(N)
-                for i in range(N):
-                    for j in range(N):
-                        DCTMatrixT[i][j] = DCTMatrix[j][i]
                 if direction > 0:
-                    DCTMatrix, DCTMatrixT = DCTMatrixT, DCTMatrix
+                    DCTMatrix = self.DCTMatrixT
+                    DCTMatrixT = self.DCTMatrix
+                else:
+                    DCTMatrix = self.DCTMatrix
+                    DCTMatrixT = self.DCTMatrixT
 
-                pix = self.tempImage.load()
-                width, height = self.tempImage.size
-                for x in range(0, width, N):
-                    for y in range(0, height, N):
+                width, height = 256, 256
+                for x in range(0, height, N):
+                    for y in range(0, width, N):
                         Y = Matrix(N)
                         Cb = Matrix(N)
                         Cr = Matrix(N)
                         for i in range(N):
                             for j in range(N):
                                 try:
-                                    Y[i][j], Cb[i][j], Cr[i][j] = pix[x + i,
-                                                                      y + j]
+                                    (Y[i][j],
+                                     Cb[i][j],
+                                     Cr[i][j]) = self.tempImage[x + i][y + j]
                                 except IndexError:
                                     (Y[i][j],
                                      Cb[i][j],
@@ -393,86 +378,107 @@ class Window(Tk):
                                                   Cb[i - 1][j - 1],
                                                   Cr[i - 1][j - 1])
 
-                        tempMatrix = matrixMult(Y, DCTMatrixT, N)
-                        # Here is: Y = DCT * Temp / sqrt(N)
+                        tempMatrix = matrixMult(DCTMatrix, Y, N)
+                        # Here is: Y = DCT * Temp / N
                         Y = map(lambda line:
                                 map(lambda el:
-                                    int(el / sqrt(N)),
+                                    el / N,
                                     line),
-                                matrixMult(DCTMatrix, tempMatrix, N))
+                                matrixMult(tempMatrix, DCTMatrixT, N))
 
-                        #tempMatrix = matrixMult(Cb, DCTMatrixT, N)
-                        #Cb = map(lambda line:
-                        #         map(lambda el:
-                        #             int(el / sqrt(N)),
-                        #             line),
-                        #         matrixMult(DCTMatrix, tempMatrix, N))
+                        tempMatrix = matrixMult(Cb, DCTMatrixT, N)
+                        Cb = map(lambda line:
+                                 map(lambda el:
+                                     el / N,
+                                     line),
+                                 matrixMult(DCTMatrix, tempMatrix, N))
 
-                        #tempMatrix = matrixMult(Cr, DCTMatrixT, N)
-                        #Cr = map(lambda line:
-                        #         map(lambda el:
-                        #             int(el / sqrt(N)),
-                        #             line),
-                        #         matrixMult(DCTMatrix, tempMatrix, N))
+                        tempMatrix = matrixMult(Cr, DCTMatrixT, N)
+                        Cr = map(lambda line:
+                                 map(lambda el:
+                                     el / N,
+                                     line),
+                                 matrixMult(DCTMatrix, tempMatrix, N))
 
                         for i in range(N):
                             for j in range(N):
                                 try:
-                                    pix[x + i, y + j] = tuple(map(int,
-                                                                  (Y[i][j],
-                                                                  Cb[i][j],
-                                                                  Cr[i][j])))
+                                    self.tempImage[x + i][y + j] = tuple(
+                                        map(lambda x: int(round(x, 0)),
+                                            (Y[i][j], Cb[i][j], Cr[i][j])))
                                 except IndexError:
                                     pass
 
             def quantise(coef, N=8):
-                Q = Matrix(N)
+                Q = [[16, 11, 10, 16, 24, 40, 51, 61],
+                    [12, 12, 14, 19, 26, 58, 60, 55],
+                    [14, 13, 16, 24, 40, 57, 69, 56],
+                    [14, 17, 22, 29, 51, 87, 80, 62],
+                    [18, 22, 37, 56, 68, 109, 103, 77],
+                    [24, 35, 55, 64, 81, 104, 113, 92],
+                    [49, 64, 78, 87, 103, 121, 120, 101],
+                    [72, 92, 95, 98, 112, 100, 103, 99]]
+
+                if N != 8:
+                    Q = Matrix(N)
+                    for i in range(N):
+                        for j in range(N):
+                            Q[i][j] = 1 + (1 + i + j) * coef
+
                 for i in range(N):
                     for j in range(N):
-                        Q[i][j] = int(1 + ((1 + i + j) * coef))
+                        Q[i][j] = Q[i][j] * coef
 
                 self.quantMatrix = Q
-                pix = self.tempImage.load()
-                width, height = self.tempImage.size
+                pix = self.tempImage
+                width, height = 256, 256
                 for x in range(0, width, N):
                     for y in range(0, height, N):
                         for i in range(N):
                             for j in range(N):
                                 try:
-                                    pix[x + i,
-                                        y + j] = (int(pix[x + i, y + j][0])
-                                                  / Q[i][j],
-                                                  pix[x + i, y + j][1]
-                                                  / 1,  # Q[i][j],
-                                                  pix[x + i, y + j][2]
-                                                  / 1,  # Q[i][j]
-                                                  )
+                                    pix[x + i][y + j] = (
+                                        int(round(pix[x + i][y + j][0] * 1.0
+                                                  / Q[i][j], 0)),
+                                        pix[x + i][y + j][1] / 1,  # Q[i][j],
+                                        pix[x + i][y + j][2] / 1)  # Q[i][j]
                                 except IndexError:
                                     pass
+                self.tempImage = pix
 
             def deQuantise(N=8):
                 Q = self.quantMatrix
-                pix = self.tempImage.load()
-                width, height = self.tempImage.size
+                pix = self.tempImage
+                width, height = 256, 256
                 for x in range(0, width, N):
                     for y in range(0, height, N):
                         for i in range(N):
                             for j in range(N):
                                 try:
-                                    pix[x + i,
-                                        y + j] = (int(pix[x + i, y + j][0]
-                                                      * Q[i][j]),
-                                                  pix[x + i, y + j][1]
-                                                  * 1,  # Q[i][j],
-                                                  pix[x + i, y + j][2]
-                                                  * 1,  # Q[i][j]
-                                                  )
+                                    pix[x + i][y + j] = (
+                                        pix[x + i][y + j][0] * Q[i][j],
+                                        pix[x + i][y + j][1] * 1,  # Q[i][j],
+                                        pix[x + i][y + j][2] * 1)  # Q[i][j]
                                 except IndexError:
                                     pass
+                self.tempImage = pix
 
             colorConvert()
             subsampling(subsample.get())
             N = renderWindow.get()
+
+            self.DCTMatrix = Matrix(N)
+            self.DCTMatrix[0] = [1.0] * N
+            for i in range(1, N):
+                for j in range(N):
+                    self.DCTMatrix[i][j] = (sqrt(2.0)
+                                            * cos((2 * j + 1) * i * pi
+                                                  / 2.0 / N))
+
+            self.DCTMatrixT = Matrix(N)
+            for i in range(N):
+                for j in range(N):
+                    self.DCTMatrixT[i][j] = self.DCTMatrix[j][i]
             dct(N, direction=0)
             quantise(coefQuant.get(), N)
 
@@ -487,7 +493,10 @@ class Window(Tk):
             dct(N, direction=1)
             colorDeConvert()
 
-            self.image[1] = self.tempImage.copy()
+            pix = self.image[1].load()
+            for i in range(256):
+                for j in range(256):
+                    pix[i, j] = self.tempImage[i][j]
             self.photo[1] = ImageTk.PhotoImage(self.image[1])
             self.label[1].configure(image=self.photo[1])
             self.label[1].image = self.photo[0]
@@ -515,7 +524,7 @@ class Window(Tk):
         coefQuant = DoubleVar(self.configJpeg)
         self.CoQuant = Scale(self.configJpeg, label="Gamma",
                              variable=coefQuant, orient=HORIZONTAL, length=150,
-                             from_=0, to=15, resolution=0.1)
+                             from_=0, to=15, resolution=0.01)
         self.CoQuant.pack()
         renderWindow = IntVar(self.configJpeg)
         self.rWSize = Scale(self.configJpeg, label="Render window size",
