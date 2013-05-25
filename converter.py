@@ -425,43 +425,42 @@ class Window(Tk):
                         for j in range(N):
                             Q[i][j] = 1 + (1 + i + j) * coef
 
-                for i in range(N):
-                    for j in range(N):
-                        Q[i][j] = Q[i][j] * coef
-
+                Q = map(lambda line: map(lambda el: el * coef, line), Q)
                 self.quantMatrix = Q
-                pix = self.tempImage
                 width, height = 256, 256
                 for x in range(0, width, N):
                     for y in range(0, height, N):
                         for i in range(N):
                             for j in range(N):
                                 try:
-                                    pix[x + i][y + j] = (
-                                        int(round(pix[x + i][y + j][0] * 1.0
-                                                  / Q[i][j], 0)),
-                                        pix[x + i][y + j][1] / 1,  # Q[i][j],
-                                        pix[x + i][y + j][2] / 1)  # Q[i][j]
+                                    self.tempImage[x + i][y + j] = (
+                                        int(round(
+                                            self.tempImage[x + i][y + j][0]
+                                            * 1.0 / Q[i][j], 0)),
+                                        self.tempImage[x + i][y + j][1]
+                                        / 1,  # Q[i][j],
+                                        self.tempImage[x + i][y + j][2]
+                                        / 1)  # Q[i][j]
                                 except IndexError:
                                     pass
-                self.tempImage = pix
 
             def deQuantise(N=8):
                 Q = self.quantMatrix
-                pix = self.tempImage
                 width, height = 256, 256
                 for x in range(0, width, N):
                     for y in range(0, height, N):
                         for i in range(N):
                             for j in range(N):
                                 try:
-                                    pix[x + i][y + j] = (
-                                        pix[x + i][y + j][0] * Q[i][j],
-                                        pix[x + i][y + j][1] * 1,  # Q[i][j],
-                                        pix[x + i][y + j][2] * 1)  # Q[i][j]
+                                    self.tempImage[x + i][y + j] = (
+                                        self.tempImage[x + i][y + j][0]
+                                        * Q[i][j],
+                                        self.tempImage[x + i][y + j][1]
+                                        * 1,  # Q[i][j],
+                                        self.tempImage[x + i][y + j][2]
+                                        * 1)  # Q[i][j]
                                 except IndexError:
                                     pass
-                self.tempImage = pix
 
             colorConvert()
             subsampling(subsample.get())
@@ -474,7 +473,6 @@ class Window(Tk):
                     self.DCTMatrix[i][j] = (sqrt(2.0)
                                             * cos((2 * j + 1) * i * pi
                                                   / 2.0 / N))
-
             self.DCTMatrixT = Matrix(N)
             for i in range(N):
                 for j in range(N):
@@ -501,7 +499,7 @@ class Window(Tk):
             self.label[1].configure(image=self.photo[1])
             self.label[1].image = self.photo[0]
             self.recalculatePSNR()
-            #self.configJpeg.destroy()
+            self.configJpeg.destroy()
 
         self.configJpeg = tkSimpleDialog.Tk()
         self.configJpeg.title("JPEG configure")
